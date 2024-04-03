@@ -134,6 +134,7 @@ namespace Rtsp.Sdp
             if (returnValue.Version == -1) { throw new InvalidDataException("version missing"); }
             if (returnValue.Origin is null) { throw new InvalidDataException("origin missing"); }
             if (string.IsNullOrEmpty(returnValue.Session) && strictParsing) { throw new InvalidDataException("session missing"); }
+            if (returnValue.Medias.Count == 0) { throw new InvalidDataException("media information(s) missing"); }
 
             return returnValue;
         }
