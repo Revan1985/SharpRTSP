@@ -52,8 +52,8 @@ namespace RtspCameraExample
         private readonly NetworkCredential credential;
         private readonly Authentication? auth;
 
-        private bool _useRTSPS = false;
-        private string _pfxFile = "";
+        private readonly bool _useRTSPS = false;
+        private readonly string _pfxFile = "";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RTSPServer"/> class.
@@ -100,7 +100,7 @@ namespace RtspCameraExample
         {
             if (string.IsNullOrEmpty(pfxFile))
             {
-                throw new ArgumentOutOfRangeException("PFX File must not be null or empty for RTSPS mode");
+                throw new ArgumentOutOfRangeException(nameof(pfxFile), "PFX File must not be null or empty for RTSPS mode");
             }
             _useRTSPS = true;
             _pfxFile = pfxFile;
@@ -139,7 +139,7 @@ namespace RtspCameraExample
                     }
                     else
                     {
-                        var certificate = new X509Certificate2(_pfxFile);
+                        var certificate = X509CertificateLoader.LoadPkcs12FromFile(_pfxFile, "");
                         rtsp_socket = new RtspTcpTlsTransport(oneClient, certificate); // NOTE - we can add a callback where we can validate the TLS Certificates here
                     }
 
@@ -594,10 +594,10 @@ namespace RtspCameraExample
                 // ToArray makes a temp copy of the list.
                 // This lets us delete items in the foreach
                 // eg when there is Write Error
-                rtspConnectionListCopy = rtspConnectionList.ToArray();
+                rtspConnectionListCopy = [.. rtspConnectionList];
             }
             // Go through each RTSP connection and output the NAL on the Video Session
-            var tasks = rtspConnectionList.Select(async (connection) =>
+            var tasks = rtspConnectionListCopy.Select(async (connection) =>
             {
                 // Only process Sessions in Play Mode
                 if (!connection.play) return;

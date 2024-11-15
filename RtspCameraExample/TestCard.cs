@@ -1,8 +1,11 @@
-﻿using System;
+﻿namespace RtspCameraExample;
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Threading;
 
 // (c) Roger Hardiman 2016, 2021
 
@@ -21,19 +24,18 @@ public class TestCard
     public delegate void ReceivedAudioFrameHandler(uint timestamp, short[] data);
 
     // Local variables
-    private Stopwatch stopwatch;
-    private System.Timers.Timer frame_timer;
+    private readonly Stopwatch stopwatch;
+    private readonly System.Timers.Timer frame_timer;
     private readonly byte[] yuv_frame;
     private int x_position = 0;
     private int y_position = 0;
-    private int fps = 0;
-    private int width = 0;
-    private int height = 0;
-    private readonly object generate_lock = new();
+    private readonly int width = 0;
+    private readonly int height = 0;
+    private readonly Lock generate_lock = new();
     private long frame_count = 0;
 
-    private System.Timers.Timer audio_timer;
-    private int audio_duration_ms = 20; // duration of sound samples for mono PCM audio. Hinted at in origial RTP standard from 1996 that mentions 160 audio samples
+    private readonly System.Timers.Timer audio_timer;
+    private readonly int audio_duration_ms = 20; // duration of sound samples for mono PCM audio. Hinted at in origial RTP standard from 1996 that mentions 160 audio samples
     private long audio_count = 0;
 
     // ASCII Font
@@ -61,7 +63,6 @@ public class TestCard
     {
         this.width = width;
         this.height = height;
-        this.fps = fps;
 
         // YUV size
         int y_size = width * height;
@@ -98,9 +99,11 @@ public class TestCard
         frame_timer.Start();
 
         // Start timer. The Timer will generate each Audio frame
-        audio_timer = new System.Timers.Timer();
-        audio_timer.Interval = 1; // on first pass timer will fire straight away (cannot have zero interval)
-        audio_timer.AutoReset = false; // do not restart timer after the time has elapsed
+        audio_timer = new System.Timers.Timer
+        {
+            Interval = 1, // on first pass timer will fire straight away (cannot have zero interval)
+            AutoReset = false // do not restart timer after the time has elapsed
+        };
         audio_timer.Elapsed += (object? sender, System.Timers.ElapsedEventArgs e) =>
         {
             // send an audio frame
@@ -243,11 +246,11 @@ public class TestCard
             long currentSeconds = (timestamp_ms / 1000);
             long currentMilliSeconds = timestamp_ms % 1000;
 
-            int soundToPlay = 0; // 0 = silence
+            int soundToPlay;
             if (((currentSeconds % 60) == 0) && (currentMilliSeconds < 300)) soundToPlay = 1;
             else if (((currentSeconds % 10) == 0) && (currentMilliSeconds < 100)) soundToPlay = 1;
             else if (((currentSeconds % 10) != 0) && (currentMilliSeconds < 100)) soundToPlay = 2;
-            else soundToPlay = 0;
+            else soundToPlay = 0; // 0 = silence
 
             // Add the sound
             for (int i = 0; i < audio_frame.Length; i++)

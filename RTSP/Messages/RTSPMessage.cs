@@ -27,7 +27,7 @@ public class RtspMessage : RtspChunk
         // We can't determine the message 
         if (string.IsNullOrEmpty(aRequestLine))
             return new RtspMessage();
-        
+
         var requestParts = aRequestLine.Split(' ', 3);
         RtspMessage returnValue;
         if (requestParts.Length == 3)
@@ -253,7 +253,7 @@ public class RtspMessage : RtspChunk
 
         return stringBuilder.ToString();
     }
-    
+
     public override object Clone()
     {
         RtspMessage returnValue = GetRtspMessage(Command);
