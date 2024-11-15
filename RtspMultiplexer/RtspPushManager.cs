@@ -9,7 +9,6 @@ namespace RtspMulticaster
 {
     public class RtspPushManager
     {
-
         private readonly Random sessionGenerator = new();
 
         public Dictionary<string, RtspPushDescription> PushDescriptions { get; } = [];
@@ -36,7 +35,6 @@ namespace RtspMulticaster
             if (PushDescriptions.ContainsKey(request.RtspUri.AbsolutePath))
             {
                 response.ReturnCode = 403;
-
             }
             else
             {
@@ -48,7 +46,6 @@ namespace RtspMulticaster
                 {
                     PushDescriptions[path] = session;
                 }
-
             }
 
             return response;
@@ -89,7 +86,6 @@ namespace RtspMulticaster
                 return response;
             }
 
-
             bool configok = false;
             foreach (var transport in request.GetTransports())
             {
@@ -115,7 +111,6 @@ namespace RtspMulticaster
             Contract.Requires(request != null);
             Contract.Ensures(Contract.Result<RtspResponse>() != null);
 
-
             var response = request.CreateResponse();
             if (!PushDescriptions.TryGetValue(request.RtspUri.AbsolutePath, out RtspPushDescription description))
             {
@@ -126,7 +121,6 @@ namespace RtspMulticaster
             description.Start(request.Session);
 
             return response;
-
         }
 
         internal RtspResponse HandleTeardown(RtspRequestTeardown request)
@@ -213,7 +207,5 @@ namespace RtspMulticaster
             var response = request.CreateResponse();
             return response;
         }
-
-
     }
 }

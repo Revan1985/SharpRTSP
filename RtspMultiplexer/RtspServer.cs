@@ -9,14 +9,11 @@
 
     public class RtspServer : IDisposable
     {
-
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
-
 
         private readonly TcpListener _RTSPServerListener;
         private ManualResetEvent _Stopping;
         private Thread _ListenTread;
-
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RTSPServer"/> class.
@@ -68,8 +65,6 @@
                 _logger.Error(error, "Got an error listening...");
                 throw;
             }
-
-
         }
 
         public void StopListen()

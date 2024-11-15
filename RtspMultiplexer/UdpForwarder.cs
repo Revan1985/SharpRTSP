@@ -96,7 +96,6 @@
             _forwarCUdpPort.Close();
         }
 
-
         /// <summary>
         /// Gets or sets the forward host for command.
         /// </summary>
@@ -112,7 +111,6 @@
         /// </summary>
         /// <value>The forward port for command.</value>
         public int ForwardPortCommand { get; set; }
-
 
         /// <summary>
         /// Gets the listen video port.
@@ -228,7 +226,6 @@
                 _logger.Debug("Forward command closed");
             }
         }
-
 
         /// <summary>
         /// Ends the send command.

@@ -34,7 +34,6 @@ namespace RtspMultiplexer
             forwarder.ToMulticast = true;
             forwarder.ForwardHostVideo = "239.0.0.1";
             forwarder.ForwardPortVideo = forwarder.FromForwardVideoPort;
-
         }
 
         public Forwarder GetForwarderFor(string path)

@@ -12,7 +12,6 @@ using System.Globalization;
 
 public class TestCard
 {
-
     // Events that applications can receive
     public event ReceivedYUVFrameHandler? ReceivedYUVFrame;
     public event ReceivedAudioFrameHandler? ReceivedAudioFrame;
@@ -20,7 +19,6 @@ public class TestCard
     // Delegated functions (essentially the function prototype)
     public delegate void ReceivedYUVFrameHandler(uint timestamp, int width, int height, Span<byte> data);
     public delegate void ReceivedAudioFrameHandler(uint timestamp, short[] data);
-
 
     // Local variables
     private Stopwatch stopwatch;
@@ -73,7 +71,6 @@ public class TestCard
 
         // Set all values to 127
         Array.Fill(yuv_frame, (byte)127);
-
 
         stopwatch = new Stopwatch();
         stopwatch.Start();
@@ -133,14 +130,12 @@ public class TestCard
         audio_timer.Dispose();
     }
 
-
     private void Send_YUV_Frame()
     {
         lock (generate_lock)
         {
             // Get the current time
             DateTime now_utc = DateTime.UtcNow;
-
 
             long timestamp_ms = now_utc.Ticks / TimeSpan.TicksPerMillisecond;
 

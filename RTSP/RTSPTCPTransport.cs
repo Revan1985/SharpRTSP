@@ -66,7 +66,6 @@ namespace Rtsp
         /// <value>The local endpoint.</value>
         public IPEndPoint LocalEndPoint => _localEndPoint;
 
-
         public uint NextCommandIndex() => ++_commandCounter;
 
         /// <summary>
@@ -82,7 +81,6 @@ namespace Rtsp
         /// </summary>
         /// <value><see langword="true"/> if connected; otherwise, <see langword="false"/>.</value>
         public bool Connected => _RtspServerClient.Client != null && _RtspServerClient.Connected;
-
 
         /// <summary>
         /// Reconnect this instance.

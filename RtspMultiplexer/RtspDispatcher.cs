@@ -28,7 +28,6 @@
         /// </summary>
         private readonly Dictionary<string, RtspSession> _activesSession = new(StringComparer.OrdinalIgnoreCase);
 
-
         private Thread _jobQueue;
         private readonly ManualResetEvent _stopping = new(false);
         private readonly AutoResetEvent _newMessage = new(false);
@@ -50,7 +49,6 @@
             _logger.Debug("One message enqueued");
             _queue.Enqueue(message);
             _newMessage.Set();
-
         }
 
         /// <summary>
@@ -121,7 +119,6 @@
 
             listener.MessageReceived += new EventHandler<RtspChunkEventArgs>(Listener_MessageReceived);
             _serverListener.Add(listener.RemoteEndPoint.ToString(), listener);
-
         }
 
         /// <summary>
@@ -160,8 +157,6 @@
                         OriginSourcePort = message.SourcePort
                     };
                 }
-
-
             }
             else if (message is RtspResponse)
             {
@@ -175,16 +170,13 @@
                         response.CSeq = context.OriginCSeq;
                         _logger.Debug("Dispatch response back to {0}", destination.RemoteEndPoint);
                     }
-
                 }
 
                 HandleResponse(response);
-
             }
 
             if (destination != null && !destination.SendMessage(message))
             {
-
                 destination.Stop();
                 _serverListener.Remove(destination.RemoteEndPoint.ToString());
 
@@ -196,7 +188,6 @@
                     _logger.Warn("Error during forward : {0}. So sending back a direct error response", message.Command);
                     theDirectResponse.ReturnCode = 500;
                     request.SourcePort.SendMessage(theDirectResponse);
-
                 }
             }
         }
@@ -234,7 +225,6 @@
             return destination;
         }
 
-
         /// <summary>
         /// Handles request message.
         /// </summary>
@@ -246,7 +236,6 @@
             Contract.Requires(message is RtspRequest);
             Contract.Ensures(Contract.Result<RtspListener>() != null);
             Contract.Ensures(Contract.ValueAtReturn(out message) != null);
-
 
             RtspRequest request = message as RtspRequest;
 
@@ -284,8 +273,6 @@
                         message = HandleRequestPlay(ref destination, requestPlay);
                     }
 
-
-
                     //Update session state and handle special message
                     if (request.Session != null && request.RtspUri != null)
                     {
@@ -318,7 +305,6 @@
                             _logger.Warn("Command {0} for session {1} which was not found", request.RequestTyped, sessionKey);
                         }
                     }
-
                 }
                 catch (Exception error)
                 {
@@ -328,7 +314,6 @@
                     theDirectResponse.ReturnCode = 500;
                     message = theDirectResponse;
                 }
-
             }
 
             return destination;
@@ -341,13 +326,10 @@
             Contract.Ensures(Contract.Result<RtspListener>() != null);
             Contract.Ensures(Contract.ValueAtReturn(out message) != null);
 
-
             RtspListener destination;
             destination = message.SourcePort;
             RtspRequest request = message as RtspRequest;
             RtspResponse theDirectResponse;
-
-
 
             switch (request.RequestTyped)
             {
@@ -384,13 +366,10 @@
             Contract.Ensures(Contract.Result<RtspListener>() != null);
             Contract.Ensures(Contract.ValueAtReturn(out message) != null);
 
-
             RtspListener destination;
             destination = message.SourcePort;
             RtspRequest request = message as RtspRequest;
             RtspResponse theDirectResponse;
-
-
 
             switch (request.RequestTyped)
             {
@@ -426,7 +405,6 @@
             Contract.Requires(message is RtspRequest);
             Contract.Ensures(Contract.Result<RtspListener>() != null);
             Contract.Ensures(Contract.ValueAtReturn(out message) != null);
-
 
             RtspListener destination;
             destination = message.SourcePort;
@@ -479,7 +457,6 @@
             return url.Uri;
         }
 
-
         /// <summary>
         /// Handles a request setup.
         /// </summary>
@@ -496,7 +473,6 @@
             Contract.Ensures(Contract.Result<RtspMessage>() != null);
             Contract.Ensures(Contract.ValueAtReturn(out destination) != null);
 
-
             // look if we already have a multicast streaming playing for this URI.
             foreach (var session in _activesSession.Values)
             {
@@ -511,7 +487,6 @@
                             IsMulticast = true,
                             Destination = existingForwarder.ForwardHostVideo,
                             Port = new PortCouple(existingForwarder.ForwardPortVideo, existingForwarder.ListenCommandPort),
-
                         }.ToString();
                         returnValue.Session = session.Name;
                         destination = requestSetup.SourcePort;
@@ -519,7 +494,6 @@
                     }
                 }
             }
-
 
             string setupKey = requestSetup.SourcePort.RemoteEndPoint.ToString() + "SEQ" + requestSetup.CSeq.ToString(CultureInfo.InvariantCulture);
 
@@ -578,7 +552,6 @@
             _setupForwarder.Add(setupKey, forwarder);
 
             return requestSetup;
-
         }
         /// <summary>
         /// Handles the request play.
@@ -593,7 +566,6 @@
             Contract.Requires(destination != null);
             Contract.Ensures(Contract.Result<RtspMessage>() != null);
             Contract.Ensures(Contract.ValueAtReturn(out destination) != null);
-
 
             string sessionKey = RtspSession.GetSessionName(requestPlay.RtspUri, requestPlay.Session);
             if (_activesSession.TryGetValue(sessionKey, out RtspSession session))
@@ -611,7 +583,6 @@
                 session.Start(requestPlay.SourcePort.RemoteEndPoint.ToString());
             }
             return requestPlay;
-
         }
         /// <summary>
         /// Selects the transport based on the configuration of the system..
@@ -652,8 +623,6 @@
             return selectedTransport;
         }
 
-
-
         /// <summary>
         /// Handles the response.
         /// </summary>
@@ -669,7 +638,6 @@
 
             UpdateSessionState(message);
 
-
             //TODO rewrite instead of remove
             if (message.Headers.ContainsKey(RtspHeaderNames.ContentBase))
                 message.Headers.Remove(RtspHeaderNames.ContentBase);
@@ -678,8 +646,6 @@
             {
                 RewriteSDPMessage(message);
             }
-
-
         }
 
         /// <summary>
@@ -846,7 +812,6 @@
             return resultForwarder;
         }
 
-
         private static uint _multicastAddress = ((uint)225 << 24) + 10;
         /// <summary>
         /// Create next available multicast address.
@@ -886,7 +851,6 @@
             //fall back to UTF-8
             sdpEncoding ??= Encoding.UTF8;
 
-
             string sdpFile = sdpEncoding.GetString(aMessage.Data.Span);
 
             using StringReader readsdp = new(sdpFile);
@@ -895,7 +859,6 @@
             string line = readsdp.ReadLine();
             while (line != null)
             {
-
                 if (line.Contains("a=control:rtsp://"))
                 {
                     string[] lineElement = line.Split(':', 2);
@@ -922,7 +885,5 @@
             aMessage.Data = sdpEncoding.GetBytes(newsdp.ToString());
             aMessage.AdjustContentLength();
         }
-
-
     }
 }
