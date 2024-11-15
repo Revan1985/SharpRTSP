@@ -80,16 +80,15 @@ namespace Rtsp.Sdp
 
         public override string ToString()
         {
-            return string.Join(" ",
-                [
+            return string.Join(" ", new string[]
+            {
                     Username,
                     SessionId,
                     SessionVersion,
                     NetType,
                     AddressType,
                     UnicastAddress,
-                ]
-                );
+            });
         }
     }
 }
