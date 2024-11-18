@@ -25,7 +25,7 @@ namespace Rtsp.Messages
 
         public void AddTransport(RtspTransport newTransport)
         {
-            string actualTransport = string.Empty;
+            var actualTransport = string.Empty;
             if (Headers.TryGetValue(RtspHeaderNames.Transport, out string? value))
             {
                 actualTransport = value + ",";

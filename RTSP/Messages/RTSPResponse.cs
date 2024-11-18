@@ -73,6 +73,7 @@ namespace Rtsp.Messages
         }
 
         private int _returnCode;
+
         /// <summary>
         /// Gets or sets the return code of the response.
         /// </summary>
@@ -99,6 +100,7 @@ namespace Rtsp.Messages
                     {
                         Array.Resize(ref commandArray, 3);
                     }
+
                     commandArray[1] = value.ToString(CultureInfo.InvariantCulture);
                     commandArray[2] = GetDefaultError(value);
                 }
@@ -111,10 +113,7 @@ namespace Rtsp.Messages
         /// <value>The return message.</value>
         public string ReturnMessage
         {
-            get
-            {
-                return commandArray.Length < 3 ? string.Empty : commandArray[2];
-            }
+            get => commandArray.Length < 3 ? string.Empty : commandArray[2];
             set
             {
                 // Make sure we have the room
@@ -122,6 +121,7 @@ namespace Rtsp.Messages
                 {
                     Array.Resize(ref commandArray, 3);
                 }
+
                 commandArray[2] = value;
             }
         }
@@ -130,7 +130,7 @@ namespace Rtsp.Messages
         /// Gets a value indicating whether this instance correspond to an OK response.
         /// </summary>
         /// <value><see langword="true"/> if this instance is OK; otherwise, <see langword="false"/>.</value>
-        public bool IsOk => ReturnCode > 0 && ReturnCode < 400;
+        public bool IsOk => ReturnCode is > 0 and < 400;
 
         /// <summary>
         /// Gets the timeout in second.
@@ -141,37 +141,39 @@ namespace Rtsp.Messages
         {
             get
             {
-                int returnValue = DEFAULT_TIMEOUT;
-                if (Headers.TryGetValue(RtspHeaderNames.Session, out string? sessionString) && sessionString != null)
+                if (!Headers.TryGetValue(RtspHeaderNames.Session, out var sessionString) || sessionString == null)
+                    return DEFAULT_TIMEOUT;
+
+                var parts = sessionString.Split(';');
+                if (parts.Length < 2) return DEFAULT_TIMEOUT;
+
+                var subParts = parts[1].Split('=');
+                if (subParts.Length < 2 || !string.Equals(subParts[0], "TIMEOUT", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    string[] parts = sessionString.Split(';');
-                    if (parts.Length > 1)
-                    {
-                        string[] subParts = parts[1].Split('=');
-                        if (subParts.Length > 1 &&
-                            string.Equals(subParts[0], "TIMEOUT", StringComparison.InvariantCultureIgnoreCase)
-                            && !int.TryParse(subParts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out returnValue))
-                        {
-                            returnValue = DEFAULT_TIMEOUT;
-                        }
-                    }
+                    return DEFAULT_TIMEOUT;
                 }
-                return returnValue;
+
+                return !int.TryParse(subParts[1], NumberStyles.Integer, CultureInfo.InvariantCulture,
+                    out var returnValue)
+                    ? DEFAULT_TIMEOUT
+                    : returnValue;
             }
             set
             {
-                if (Headers.TryGetValue(RtspHeaderNames.Session, out string? sessionString) && sessionString != null)
+                if (!Headers.TryGetValue(RtspHeaderNames.Session, out var sessionString) || sessionString == null)
                 {
-                    if (value != DEFAULT_TIMEOUT)
-                    {
-                        Headers[RtspHeaderNames.Session] =
-                            sessionString.Split(';')[0] + ";timeout=" + value.ToString(CultureInfo.InvariantCulture);
-                    }
-                    else
-                    {
-                        //remove timeout part
-                        Headers[RtspHeaderNames.Session] = sessionString.Split(';')[0];
-                    }
+                    return;
+                }
+                
+                if (value != DEFAULT_TIMEOUT)
+                {
+                    Headers[RtspHeaderNames.Session] =
+                        sessionString.Split(';')[0] + ";timeout=" + value.ToString(CultureInfo.InvariantCulture);
+                }
+                else
+                {
+                    //remove timeout part
+                    Headers[RtspHeaderNames.Session] = sessionString.Split(';')[0];
                 }
             }
         }
@@ -184,7 +186,7 @@ namespace Rtsp.Messages
         {
             get
             {
-                if (!Headers.TryGetValue(RtspHeaderNames.Session, out string? sessionString) || sessionString is null)
+                if (!Headers.TryGetValue(RtspHeaderNames.Session, out var sessionString) || sessionString is null)
                     return null;
 
                 return sessionString.Split(';')[0];
@@ -193,7 +195,7 @@ namespace Rtsp.Messages
             {
                 if (Timeout != DEFAULT_TIMEOUT)
                 {
-                    Headers[RtspHeaderNames.Session] = value + ";timeout=" + Timeout.ToString(CultureInfo.InvariantCulture);
+                    Headers[RtspHeaderNames.Session] = $"{value};timeout={Timeout.ToString(CultureInfo.InvariantCulture)}";
                 }
                 else
                 {
