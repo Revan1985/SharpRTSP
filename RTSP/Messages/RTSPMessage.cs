@@ -120,7 +120,7 @@ public class RtspMessage : RtspChunk
     }
 
     /// <summary>
-    /// Gets or sets the Ccommande Seqquence number.
+    /// Gets or sets the command sequence number.
     /// <remarks>If the header is not define or not a valid number it return 0</remarks>
     /// </summary>
     /// <value>The sequence number.</value>
@@ -148,17 +148,8 @@ public class RtspMessage : RtspChunk
     /// <value>The session ID.</value>
     public virtual string? Session
     {
-        get
-        {
-            if (!Headers.TryGetValue(RtspHeaderNames.Session, out string? value))
-                return null;
-
-            return value;
-        }
-        set
-        {
-            Headers[RtspHeaderNames.Session] = value;
-        }
+        get => !Headers.TryGetValue(RtspHeaderNames.Session, out string? value) ? null : value;
+        set => Headers[RtspHeaderNames.Session] = value;
     }
 
     /// <summary>

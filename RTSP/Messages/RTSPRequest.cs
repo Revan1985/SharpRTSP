@@ -76,26 +76,17 @@ namespace Rtsp.Messages
         /// Gets the request.
         /// </summary>
         /// <value>The request in string format.</value>
-        public string Request
-        {
-            get
-            {
-                return commandArray[0];
-            }
-        }
+        public string Request => commandArray[0];
 
         /// <summary>
         /// Gets the request.
-        /// <remarks>The return value is typed with <see cref="Rtsp.RequestType"/> if the value is not
-        /// reconise the value is sent. The string value can be get by <see cref="Request"/></remarks>
+        /// <remarks>The return value is typed with <see cref="RtspRequest.RequestType"/> if the value is not
+        /// recognise the value is sent. The string value can be got by <see cref="Request"/></remarks>
         /// </summary>
         /// <value>The request.</value>
         public RequestType RequestTyped
         {
-            get
-            {
-                return ParseRequest(commandArray[0]);
-            }
+            get => ParseRequest(commandArray[0]);
             set
             {
                 if (Enum.IsDefined(typeof(RequestType), value))
@@ -105,7 +96,7 @@ namespace Rtsp.Messages
             }
         }
 
-        private Uri? _RtspUri;
+        private Uri? _rtspUri;
 
         /// <summary>
         /// Gets or sets the Rtsp asked URI.
@@ -120,15 +111,15 @@ namespace Rtsp.Messages
                 {
                     return null;
                 }
-                if (_RtspUri == null)
+                if (_rtspUri == null)
                 {
-                    Uri.TryCreate(commandArray[1], UriKind.Absolute, out _RtspUri);
+                    Uri.TryCreate(commandArray[1], UriKind.Absolute, out _rtspUri);
                 }
-                return _RtspUri;
+                return _rtspUri;
             }
             set
             {
-                _RtspUri = value;
+                _rtspUri = value;
                 if (commandArray.Length < 2)
                 {
                     Array.Resize(ref commandArray, 3);
@@ -138,9 +129,9 @@ namespace Rtsp.Messages
         }
 
         /// <summary>
-        /// Gets the assiociate OK response with the request.
+        /// Gets the associate OK response with the request.
         /// </summary>
-        /// <returns>an Rtsp response correcponding to request.</returns>
+        /// <returns>an Rtsp response corresponding to request.</returns>
         public virtual RtspResponse CreateResponse()
         {
             var returnValue = new RtspResponse
@@ -148,7 +139,7 @@ namespace Rtsp.Messages
                 ReturnCode = 200,
                 CSeq = CSeq,
             };
-            if (Headers.TryGetValue(RtspHeaderNames.Session, out string? value))
+            if (Headers.TryGetValue(RtspHeaderNames.Session, out var value))
             {
                 returnValue.Headers[RtspHeaderNames.Session] = value;
             }
