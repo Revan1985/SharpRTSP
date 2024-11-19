@@ -16,7 +16,8 @@ namespace Rtsp
             _realm = realm ?? throw new ArgumentNullException(nameof(realm));
         }
 
-        public override string GetResponse(uint nonceCounter, string uri, string method, byte[] entityBodyBytes)
+        public override string GetResponse(uint nonceCounter, string uri, string method,
+            byte[] entityBodyBytes)
         {
             string usernamePasswordHash = $"{Credentials.UserName}:{Credentials.Password}";
             return AUTHENTICATION_PREFIX + Convert.ToBase64String(Encoding.UTF8.GetBytes(usernamePasswordHash));
@@ -27,7 +28,7 @@ namespace Rtsp
             return $"{AUTHENTICATION_PREFIX}realm=\"{_realm}\"";
         }
 
-        public override bool IsValid(RtspMessage receivedMessage)
+        public override bool IsValid(RtspRequest receivedMessage)
         {
             string? authorization = receivedMessage.Headers["Authorization"];
 
@@ -37,11 +38,11 @@ namespace Rtsp
                 return false;
             }
             // remove 'Basic '
-            string base64_str = authorization[AUTHENTICATION_PREFIX.Length..];
+            string base64Str = authorization[AUTHENTICATION_PREFIX.Length..];
             string decoded;
             try
             {
-                byte[] data = Convert.FromBase64String(base64_str);
+                byte[] data = Convert.FromBase64String(base64Str);
                 decoded = Encoding.UTF8.GetString(data);
             }
             catch

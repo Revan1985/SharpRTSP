@@ -21,7 +21,7 @@ namespace RTSP.Tests.Authentication
         [Test]
         public void IsValidTest()
         {
-            var message = new RtspMessage();
+            var message = new RtspRequest();
             message.Headers.Add("Authorization", "Basic dXNlcm5hbWVAZXhhbXBsZS5jb206UGFzc3dvcmRAIVhZWg==");
             var testObject = new AuthenticationBasic(new NetworkCredential("username@example.com", "Password@!XYZ"), "Test Realm");
 
@@ -33,7 +33,7 @@ namespace RTSP.Tests.Authentication
         [Test]
         public void IsValidCaseUserNameTest()
         {
-            var message = new RtspMessage();
+            var message = new RtspRequest();
             message.Headers.Add("Authorization", "Basic dXNlcm5hbWVAZXhhbXBsZS5jb206UGFzc3dvcmRAIVhZWg==");
             var testObject = new AuthenticationBasic(new NetworkCredential("USERNAME@example.com", "Password@!XYZ"), "Test Realm");
 
@@ -45,7 +45,7 @@ namespace RTSP.Tests.Authentication
         [Test]
         public void IsValidWrongCasePasswordTest()
         {
-            var message = new RtspMessage();
+            var message = new RtspRequest();
             message.Headers.Add("Authorization", "Basic dXNlcm5hbWVAZXhhbXBsZS5jb206UGFzc3dvcmRAIVhZWg==");
             var testObject = new AuthenticationBasic(new NetworkCredential("username@example.com", "password@!XYZ"), "Test Realm");
 
@@ -57,7 +57,7 @@ namespace RTSP.Tests.Authentication
         [Test]
         public void IsValidMisingPasswordTest()
         {
-            var message = new RtspMessage();
+            var message = new RtspRequest();
             message.Headers.Add("Authorization", "Basic dXNlcm5hbWVAZXhhbXBsZS5jb20=");
             var testObject = new AuthenticationBasic(new NetworkCredential("username@example.com", "password@!XYZ"), "Test Realm");
 
@@ -69,7 +69,7 @@ namespace RTSP.Tests.Authentication
         [Test]
         public void IsValidInvalidBase64Test()
         {
-            var message = new RtspMessage();
+            var message = new RtspRequest();
             message.Headers.Add("Authorization", "Basic invalid$$$$");
             var testObject = new AuthenticationBasic(new NetworkCredential("username@example.com", "password@!XYZ"), "Test Realm");
 

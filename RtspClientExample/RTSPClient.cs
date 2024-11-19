@@ -502,12 +502,10 @@ namespace RtspClientExample
                     _logger.LogDebug("WWW Authorize parsed for {authentication}", _authentication);
                 }
 
-                RtspMessage? resend_message = message.OriginalRequest?.Clone() as RtspMessage;
-
-                if (resend_message is not null)
+                if (message.OriginalRequest?.Clone() is RtspRequest resendMessage)
                 {
-                    resend_message.AddAuthorization(_authentication, _uri!, rtspSocket!.NextCommandIndex());
-                    rtspClient?.SendMessage(resend_message);
+                    resendMessage.AddAuthorization(_authentication, _uri!, rtspSocket!.NextCommandIndex());
+                    rtspClient?.SendMessage(resendMessage);
                 }
                 return;
             }

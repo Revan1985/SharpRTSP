@@ -35,7 +35,8 @@ namespace Rtsp
             return $"Digest realm=\"{_realm}\", nonce=\"{_nonce}\"";
         }
 
-        public override string GetResponse(uint nonceCounter, string uri, string method, byte[] entityBodyBytes)
+        public override string GetResponse(uint nonceCounter, string uri, string method,
+            byte[] entityBodyBytes)
         {
             MD5 md5 = MD5.Create();
             string ha1 = CalculateMD5Hash(md5, $"{Credentials.UserName}:{_realm}:{Credentials.Password}");
@@ -62,22 +63,22 @@ namespace Rtsp
             }
             return sb.ToString();
         }
-        public override bool IsValid(RtspMessage received_message)
+        public override bool IsValid(RtspRequest receivedMessage)
         {
-            string? authorization = received_message.Headers["Authorization"];
+            string? authorization = receivedMessage.Headers["Authorization"];
 
             // Check Username, URI, Nonce and the MD5 hashed Response
             if (authorization?.StartsWith("Digest ", StringComparison.Ordinal) == true)
             {
                 // remove 'Digest '
-                var value_str = authorization[7..];
-                string? auth_header_username = null;
-                string? auth_header_realm = null;
-                string? auth_header_nonce = null;
-                string? auth_header_uri = null;
-                string? auth_header_response = null;
+                var valueStr = authorization[7..];
+                string? username = null;
+                string? realm = null;
+                string? nonce = null;
+                string? uri = null;
+                string? response = null;
 
-                foreach (string value in value_str.Split(','))
+                foreach (string value in valueStr.Split(','))
                 {
                     string[] tuple = value.Trim().Split('=', 2);
                     if (tuple.Length != 2)
@@ -87,39 +88,39 @@ namespace Rtsp
                     string var = tuple[1].Trim([' ', '\"']);
                     if (tuple[0].Equals("username", StringComparison.OrdinalIgnoreCase))
                     {
-                        auth_header_username = var;
+                        username = var;
                     }
                     else if (tuple[0].Equals("realm", StringComparison.OrdinalIgnoreCase))
                     {
-                        auth_header_realm = var;
+                        realm = var;
                     }
                     else if (tuple[0].Equals("nonce", StringComparison.OrdinalIgnoreCase))
                     {
-                        auth_header_nonce = var;
+                        nonce = var;
                     }
                     else if (tuple[0].Equals("uri", StringComparison.OrdinalIgnoreCase))
                     {
-                        auth_header_uri = var;
+                        uri = var;
                     }
                     else if (tuple[0].Equals("response", StringComparison.OrdinalIgnoreCase))
                     {
-                        auth_header_response = var;
+                        response = var;
                     }
                 }
 
                 // Create the MD5 Hash using all parameters passed in the Auth Header with the 
                 // addition of the 'Password'
                 MD5 md5 = MD5.Create();
-                string hashA1 = CalculateMD5Hash(md5, auth_header_username + ":" + auth_header_realm + ":" + Credentials.Password);
-                string hashA2 = CalculateMD5Hash(md5, received_message.Method + ":" + auth_header_uri);
-                string expected_response = CalculateMD5Hash(md5, hashA1 + ":" + auth_header_nonce + ":" + hashA2);
+                string hashA1 = CalculateMD5Hash(md5, username + ":" + realm + ":" + Credentials.Password);
+                string hashA2 = CalculateMD5Hash(md5, receivedMessage.RequestTyped + ":" + uri);
+                string expectedResponse = CalculateMD5Hash(md5, hashA1 + ":" + nonce + ":" + hashA2);
 
                 // Check if everything matches
                 // ToDo - extract paths from the URIs (ignoring SETUP's trackID)
-                return (string.Equals(auth_header_username, Credentials.UserName, StringComparison.OrdinalIgnoreCase))
-                    && (string.Equals(auth_header_realm, _realm, StringComparison.OrdinalIgnoreCase))
-                    && (string.Equals(auth_header_nonce, _nonce, StringComparison.OrdinalIgnoreCase))
-                    && (string.Equals(auth_header_response, expected_response, StringComparison.OrdinalIgnoreCase));
+                return (string.Equals(username, Credentials.UserName, StringComparison.OrdinalIgnoreCase))
+                    && (string.Equals(realm, _realm, StringComparison.OrdinalIgnoreCase))
+                    && (string.Equals(nonce, _nonce, StringComparison.OrdinalIgnoreCase))
+                    && (string.Equals(response, expectedResponse, StringComparison.OrdinalIgnoreCase));
             }
             return false;
         }
@@ -135,9 +136,9 @@ namespace Rtsp
             byte[] hash = md5_session.ComputeHash(input);
 
             var output = new StringBuilder();
-            for (int i = 0; i < hash.Length; i++)
+            foreach (var t in hash)
             {
-                output.Append(hash[i].ToString("x2"));
+                output.Append(t.ToString("x2"));
             }
 
             return output.ToString();

@@ -17,7 +17,7 @@ namespace Rtsp
 
         public abstract string GetServerResponse();
         public abstract string GetResponse(uint nonceCounter, string uri, string method, byte[] entityBodyBytes);
-        public abstract bool IsValid(RtspMessage received_message);
+        public abstract bool IsValid(RtspRequest receivedMessage);
 
         public static Authentication Create(NetworkCredential credential, string authenticateHeader)
         {
