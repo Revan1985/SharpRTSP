@@ -35,7 +35,7 @@ namespace Rtsp
 
         public void AddHexString(string hexString)
         {
-            foreach (char c in hexString)
+            foreach (var c in hexString)
             {
                 var value = c switch
                 {

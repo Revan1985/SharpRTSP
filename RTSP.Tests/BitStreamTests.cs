@@ -34,6 +34,23 @@ namespace Rtsp.Tests
         }
 
         [Test]
+        public void ReadInvalidData()
+        {
+            BitStream bitStream = new();
+
+            Assert.That(() => bitStream.AddHexString("GER"), Throws.ArgumentException);
+        }
+
+        [Test]
+        public void ReadTooMuch()
+        {
+            BitStream bitStream = new();
+            bitStream.AddHexString("AB");
+
+            Assert.That(() => bitStream.Read(10), Throws.InvalidOperationException);
+        }
+
+        [Test]
         public void ReadTestLowerCase()
         {
             BitStream bitstream = new();
