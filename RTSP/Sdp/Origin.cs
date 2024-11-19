@@ -3,7 +3,7 @@
 namespace Rtsp.Sdp
 {
     /// <summary>
-    /// Object ot represent orgin in an Session Description Protocol
+    /// Object ot represent origin in a Session Description Protocol
     /// </summary>
     public class Origin
     {
