@@ -7,13 +7,8 @@ namespace Rtsp.Messages
 {
     public class RtspTransport
     {
-        public RtspTransport()
-        {
-            // Default value is true in RFC
-            IsMulticast = true;
-            LowerTransport = LowerTransportType.UDP;
-            Mode = "PLAY";
-        }
+        
+
         /*
 RFC
 Transport           =    "Transport" ":"
@@ -96,14 +91,17 @@ mode                =    <"> *Method <"> | Method
         /// Gets or sets the lower transport.
         /// </summary>
         /// <value>The lower transport.</value>
-        public LowerTransportType LowerTransport { get; set; }
+        public LowerTransportType LowerTransport { get; set; } = LowerTransportType.UDP;
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is multicast.
         /// </summary>
         /// <value>
         /// 	<see langword="true"/> if this instance is multicast; otherwise, <see langword="false"/>.
         /// </value>
-        public bool IsMulticast { get; set; }
+        /// <remarks>Default value is true in RFC</remarks>
+        public bool IsMulticast { get; set; } = true;
+
         /// <summary>
         /// Gets or sets the destination.
         /// </summary>
@@ -158,7 +156,7 @@ mode                =    <"> *Method <"> | Method
         /// Gets or sets the mode.
         /// </summary>
         /// <value>The mode.</value>
-        public string? Mode { get; set; }
+        public string? Mode { get; set; } = "PLAY";
 
         /// <summary>
         /// Parses the specified transport string.
@@ -211,16 +209,14 @@ mode                =    <"> *Method <"> | Method
                         returnValue.IsAppend = true;
                         break;
                     case "TTL":
-                        int ttl = 0;
-                        if (subPart.Length < 2 || !int.TryParse(subPart[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out ttl))
+                        if (subPart.Length < 2 || !int.TryParse(subPart[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var ttl))
                             throw new ArgumentException("TTL value invalid", nameof(aTransportString));
                         returnValue.TTL = ttl;
                         break;
                     case "LAYERS":
-                        int layers = 0;
-                        if (subPart.Length < 2 || !int.TryParse(subPart[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out layers))
+                        if (subPart.Length < 2 || !int.TryParse(subPart[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var layers))
                             throw new ArgumentException("Layers value invalid", nameof(aTransportString));
-                        returnValue.TTL = layers;
+                        returnValue.Layers = layers;
                         break;
                     case "PORT":
                         if (subPart.Length < 2)
@@ -247,8 +243,6 @@ mode                =    <"> *Method <"> | Method
                             throw new ArgumentException("mode value invalid", nameof(aTransportString));
                         returnValue.Mode = subPart[1];
                         break;
-                    default:
-                        break;
                 }
             }
             return returnValue;
@@ -256,12 +250,11 @@ mode                =    <"> *Method <"> | Method
 
         private static void ReadLowerTransport(RtspTransport returnValue, string[] transportProtocolPart)
         {
-            if (transportProtocolPart.Length == 3)
-            {
-                if (!Enum.TryParse(transportProtocolPart[2], out LowerTransportType lowerTransport))
-                    throw new ArgumentException("Lower transport type invalid", nameof(transportProtocolPart));
-                returnValue.LowerTransport = lowerTransport;
-            }
+            if (transportProtocolPart.Length != 3) return;
+            
+            if (!Enum.TryParse(transportProtocolPart[2], out LowerTransportType lowerTransport))
+                throw new ArgumentException("Lower transport type invalid", nameof(transportProtocolPart));
+            returnValue.LowerTransport = lowerTransport;
         }
 
         private static void ReadProfile(RtspTransport returnValue, string[] transportProtocolPart)
