@@ -1,4 +1,9 @@
-﻿using NUnit.Framework;
+﻿using System;
+using System.Collections.Generic;
+using NUnit.Framework;
+using NUnit.Framework.Interfaces;
+using NUnit.Framework.Internal;
+using NUnit.Framework.Internal.Builders;
 
 namespace Rtsp.Messages.Tests
 {
@@ -50,5 +55,32 @@ namespace Rtsp.Messages.Tests
 
             Assert.That(oneMessage.Headers["CSeq"], Is.EqualTo("123"));
         }
+#if NET8_0_OR_GREATER
+        [Test]
+        [GenericTestCase<RtspRequestOptions>(RtspRequest.RequestType.OPTIONS)]
+        [GenericTestCase<RtspRequestDescribe>(RtspRequest.RequestType.DESCRIBE)]
+        [GenericTestCase<RtspRequestSetup>(RtspRequest.RequestType.SETUP)]
+        [GenericTestCase<RtspRequestPlay>(RtspRequest.RequestType.PLAY)]
+        [GenericTestCase<RtspRequestPause>(RtspRequest.RequestType.PAUSE)]
+        [GenericTestCase<RtspRequestTeardown>(RtspRequest.RequestType.TEARDOWN)]
+        [GenericTestCase<RtspRequestGetParameter>(RtspRequest.RequestType.GET_PARAMETER)]
+        [GenericTestCase<RtspRequestAnnounce>(RtspRequest.RequestType.ANNOUNCE)]
+        [GenericTestCase<RtspRequestRecord>(RtspRequest.RequestType.RECORD)]
+        public void CheckRequestType<T>(RtspRequest.RequestType expectedType) where T : RtspRequest, new()
+        {
+            RtspRequest onMessage = new T();
+            Assert.That(onMessage.RequestTyped, Is.EqualTo(expectedType));
+        }
+
+        [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+        private class GenericTestCaseAttribute<T>(params object[] arguments) : TestCaseAttribute(arguments), ITestBuilder
+        {
+            IEnumerable<TestMethod> ITestBuilder.BuildFrom(IMethodInfo method, Test? suite)
+            {
+                var testedMethod = method.IsGenericMethodDefinition ? method.MakeGenericMethod(typeof(T)) : method;
+                return BuildFrom(testedMethod, suite);
+            }
+        }
+#endif
     }
 }
