@@ -142,37 +142,38 @@ public class RTSPDispatcher
 
         RtspListener destination = null;
 
-        if (message is RtspRequest)
+        switch (message)
         {
-            destination = HandleRequest(ref message);
-            _logger.Debug("Dispatch message from {0} to {1}",
-                message.SourcePort != null ? message.SourcePort.RemoteEndPoint : "UNKNOWN", destination != null ? destination.RemoteEndPoint : "UNKNOWN");
-
-            // HandleRequest can change message type.
-            if (message is RtspRequest)
+            case RtspRequest:
             {
-                (message as RtspRequest).ContextData = new OriginContext
+                destination = HandleRequest(ref message);
+                _logger.Debug("Dispatch message from {0} to {1}",
+                    message.SourcePort != null ? message.SourcePort.RemoteEndPoint : "UNKNOWN", destination != null ? destination.RemoteEndPoint : "UNKNOWN");
+
+                // HandleRequest can change message type.
+                if (message is RtspRequest)
                 {
-                    OriginCSeq = message.CSeq,
-                    OriginSourcePort = message.SourcePort
-                };
-            }
-        }
-        else if (message is RtspResponse)
-        {
-            RtspResponse response = message as RtspResponse;
+                    (message as RtspRequest).ContextData = new OriginContext
+                    {
+                        OriginCSeq = message.CSeq,
+                        OriginSourcePort = message.SourcePort
+                    };
+                }
 
-            if (response.OriginalRequest != null)
+                break;
+            }
+            case RtspResponse rtspResponse:
             {
-                if (response.OriginalRequest.ContextData is OriginContext context)
+                if (rtspResponse.OriginalRequest?.ContextData is OriginContext context)
                 {
                     destination = context.OriginSourcePort;
-                    response.CSeq = context.OriginCSeq;
+                    rtspResponse.CSeq = context.OriginCSeq;
                     _logger.Debug("Dispatch response back to {0}", destination.RemoteEndPoint);
                 }
-            }
 
-            HandleResponse(response);
+                HandleResponse(rtspResponse);
+                break;
+            }
         }
 
         if (destination?.SendMessage(message) == false)
@@ -181,11 +182,10 @@ public class RTSPDispatcher
             _serverListener.Remove(destination.RemoteEndPoint.ToString());
 
             // send back a message because we can't forward.
-            if (message is RtspRequest && message.SourcePort != null)
+            if (message is RtspRequest request && request.SourcePort != null)
             {
-                RtspRequest request = message as RtspRequest;
-                RtspResponse theDirectResponse = request.CreateResponse();
-                _logger.Warn("Error during forward : {0}. So sending back a direct error response", message.Command);
+                _logger.Warn("Error during forward : {0}. So sending back a direct error response", request.Command);
+                var theDirectResponse = request.CreateResponse();
                 theDirectResponse.ReturnCode = 500;
                 request.SourcePort.SendMessage(theDirectResponse);
             }
@@ -206,21 +206,20 @@ public class RTSPDispatcher
         Contract.Requires(destinationUri != null);
 
         string destinationName = destinationUri.Authority;
-        if (!_serverListener.TryGetValue(destinationName, out RtspListener destination))
-        {
-            destination = new(new RtspTcpTransport(destinationUri));
+        if (_serverListener.TryGetValue(destinationName, out RtspListener destination)) return destination;
+        
+        destination = new(new RtspTcpTransport(destinationUri));
 
-            // un peu pourri mais pas d'autre idée...
-            // pour avoir vraiment des clef avec IP....
-            if (_serverListener.TryGetValue(destination.RemoteEndPoint.ToString(), out RtspListener value))
-            {
-                destination = value;
-            }
-            else
-            {
-                AddListener(destination);
-                destination.Start();
-            }
+        // un peu pourri mais pas d'autre idée...
+        // pour avoir vraiment des clef avec IP....
+        if (_serverListener.TryGetValue(destination.RemoteEndPoint.ToString(), out var value))
+        {
+            destination = value;
+        }
+        else
+        {
+            AddListener(destination);
+            destination.Start();
         }
         return destination;
     }
@@ -261,17 +260,14 @@ public class RTSPDispatcher
                 request.RtspUri = RewriteUri(request.RtspUri);
                 destination = GetRtspListenerForDestination(request.RtspUri);
 
-                // Handle setup
-                if (request is RtspRequestSetup requestSetup)
+                message = request switch
                 {
-                    message = HandleRequestSetup(ref destination, requestSetup);
-                }
-
-                //Handle Play Reques
-                if (request is RtspRequestPlay requestPlay)
-                {
-                    message = HandleRequestPlay(ref destination, requestPlay);
-                }
+                    // Handle setup
+                    RtspRequestSetup requestSetup => HandleRequestSetup(ref destination, requestSetup),
+                    //Handle Play Request
+                    RtspRequestPlay requestPlay => HandleRequestPlay(ref destination, requestPlay),
+                    _ => message
+                };
 
                 //Update session state and handle special message
                 if (request.Session != null && request.RtspUri != null)

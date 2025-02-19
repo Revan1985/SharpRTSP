@@ -63,16 +63,14 @@ namespace Rtsp
         }
         private void RtspListenerDataReceived(object? sender, RtspChunkEventArgs e)
         {
-            if (e.Message is RtspData dataMessage && !dataMessage.Data.IsEmpty)
+            if (e.Message is not RtspData dataMessage || dataMessage.Data.IsEmpty) return;
+            if (dataMessage.Channel == ControlChannel)
             {
-                if (dataMessage.Channel == ControlChannel)
-                {
-                    ControlReceived?.Invoke(this, new RtspDataEventArgs(dataMessage));
-                }
-                else if (dataMessage.Channel == DataChannel)
-                {
-                    DataReceived?.Invoke(this, new RtspDataEventArgs(dataMessage));
-                }
+                ControlReceived?.Invoke(this, new RtspDataEventArgs(dataMessage));
+            }
+            else if (dataMessage.Channel == DataChannel)
+            {
+                DataReceived?.Invoke(this, new RtspDataEventArgs(dataMessage));
             }
         }
     }
