@@ -409,7 +409,7 @@ namespace Rtsp
         /// Reads one message.
         /// </summary>
         /// <param name="commandStream">The Rtsp stream.</param>
-        /// <returns>Message readen</returns>
+        /// <returns>Message read</returns>
         public async ValueTask<RtspChunk?> ReadOneMessageAsync(Stream commandStream, CancellationToken token)
         {
             if (commandStream == null)

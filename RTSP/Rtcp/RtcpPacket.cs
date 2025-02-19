@@ -39,7 +39,7 @@ namespace Rtsp.Rtcp
 
         public RtcpPacket Next => new(rawData[((Length + 1) * 4)..]);
 
-        // NTP Most Signigicant Word is relative to 0h, 1 Jan 1900
+        // NTP Most Significant Word is relative to 0h, 1 Jan 1900
         // This will wrap around in 2036
         private static readonly DateTime ntpStartTime = new(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
