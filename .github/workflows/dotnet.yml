@@ -17,4 +17,4 @@ jobs:
     - name: Build
       run: dotnet build --no-restore RTSP.sln
     - name: Test
-      run: dotnet test --no-build --verbosity normal --filter TestCategory!=Integration RTSP.sln
+      run: dotnet test --no-build --verbosity normal --framework net9.0 --filter TestCategory!=Integration RTSP.sln
